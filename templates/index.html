@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HelpLine</title>
+        <link href="static/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    </head>
+    <body>
+        
+        <div>
+            <img src="{{ url_for('static', filename='SafeLineLogo.png') }}" alt="SafeLine Logo" width="150">
+        </div>
+        <h1><em>In an Emergency? <br> Talk to Safeline</em></h1><br>
+       
+        <button id="micBtn" type="button"><img src="{{ url_for('static', filename='mic-icon.png') }}" alt="Mic" width="50" id="micBtnIcon"></button><br><br>
+        
+        <br><h3>Or Chat With Safeline</h3>
+
+        <form id="speechForm" method="POST" action="/process">
+
+        <label for="chat"><strong></strong></label>
+        <input type="hidden" id="user_input" name="user_input">
+        <input type="text" id="chat" name="chat" rows="10" cols="40" placeholder="Ask Anything"><br>
+        <button type="button" id="enter">Enter</button>
+
+        </form>
+        
+        {% if response %}
+        <div id="response-box">
+        <h2>Response:</h2>
+        <p>{{ response }}</p>
+        </div>
+        {% endif %}
+        
+        <div id="map" style="height: 400px; width: 70%; margin-top: 20px;"></div>
+        <script>
+document.addEventListener("DOMContentLoaded", function() {
+    {% if server_response %}
+        console.log("Server response:", "{{ server_response }}");
+
+        // Get user location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+
+                // Initialize map
+                const map = L.map('map').setView([lat, lon], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                // User marker
+                L.marker([lat, lon]).addTo(map).bindPopup("You are here").openPopup();
+
+                // Example: nearest hospital (just dummy coords for now)
+                const nearestHospital = [lat + 0.01, lon + 0.01];
+                L.marker(nearestHospital).addTo(map).bindPopup("Nearest Hospital").openPopup();
+
+                // You can also alert or log the server response if needed
+                alert("Emergency advice: {{ server_response }}");
+            });
+        }
+    {% endif %}
+});
+</script>
+    <script src="static/speech.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    </body>
+</html>
